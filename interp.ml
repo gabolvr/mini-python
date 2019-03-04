@@ -96,9 +96,9 @@ let rec expr (ctx: ctx) = function
             else
                 error "Modulo operation by zero"
         | Beq, _, _  ->
-            Vbool (v1 == v2)
+            Vbool (v1 = v2)
         | Bneq, _, _ ->
-            Vbool (v1 != v2)
+            Vbool (v1 <> v2)
         | Blt, _, _  ->
             Vbool (v1 < v2)
         | Ble, _, _  ->
