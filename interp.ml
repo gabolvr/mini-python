@@ -140,8 +140,26 @@ let rec expr (ctx: ctx) = function
       assert false (* à compléter (question 5) *)
   | Ecall ("list", [Ecall ("range", [e1])]) ->
       assert false (* à compléter (question 5) *)
-  | Ecall (f, el) ->
-      assert false (* à compléter (question 4) *)
+  | Ecall ((f: ident), (el: expr list)) ->
+      if Hashtbl.mem functions f then
+        let (id_list, body) = Hashtbl.find functions f in
+        let ctx_fun = Hashtbl.copy ctx in
+        if (List.length id_list) == (List.length el) then
+            let assign_argument id e =
+                let v = expr ctx_fun e in
+                Hashtbl.add ctx_fun id v
+            in
+            List.iter2 assign_argument id_list el;
+            begin try
+                stmt ctx_fun body;
+                Vnone
+            with
+                Return v -> v
+            end
+        else
+            error ("Invalid arguments in function " ^ f ^ ".")
+      else
+        error ("Function " ^ f ^ " was not defined before.")
   | Elist el ->
       assert false (* à compléter (question 5) *)
   | Eget (e1, e2) ->
@@ -166,7 +184,7 @@ and stmt (ctx: ctx) = function
       let v = expr ctx e in
       Hashtbl.add ctx id v
   | Sreturn e ->
-      assert false (* à compléter (question 4) *)
+      raise (Return (expr ctx e))
   | Sfor (x, e, s) ->
       assert false (* à compléter (question 5) *)
   | Sset (e1, e2, e3) ->
@@ -183,8 +201,12 @@ and block ctx = function
    - s est une instruction, qui représente les instructions globales
  *)
 
+let def_fun (id, id_list, s) =
+    Hashtbl.add functions id (id_list, s)
+
 let file (dl, s) =
   (* à compléter (question 4) *)
+  List.iter def_fun dl;
   stmt (Hashtbl.create 16) s
 
 

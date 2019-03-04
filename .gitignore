@@ -1,9 +1,9 @@
-.annot
-.automaton
-.cmo
-.cmi
-mini-python
+*.annot
+*.automaton
+*.cmo
+*.cmi
 test.py
+mini-python
 lexer.ml
 parser.ml
 parser.mli
