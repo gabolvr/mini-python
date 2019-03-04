@@ -42,9 +42,13 @@ let rec print_value = function
    la liste vide, la chaîne vide et l'entier 0 sont considérés comme
    False et toute autre valeurs comme True *)
 
-let is_false v = assert false (* à compléter (question 2) *)
+let is_false = function
+    | Vnone | Vbool false | Vint 0 | Vstring "" -> true
+    | Vlist l when (Array.length l == 0) -> true
+    | _ -> false
 
-let is_true v = assert false (* à compléter (question 2) *)
+let is_true v =
+    not (is_false v)
 
 (* Les fonctions sont ici uniquement globales *)
 
@@ -91,14 +95,20 @@ let rec expr (ctx: ctx) = function
                 Vint (n1 mod n2)
             else
                 error "Modulo operation by zero"
-        | Beq, _, _  -> assert false (* à compléter (question 2) *)
-        | Bneq, _, _ -> assert false (* à compléter (question 2) *)
-        | Blt, _, _  -> assert false (* à compléter (question 2) *)
-        | Ble, _, _  -> assert false (* à compléter (question 2) *)
-        | Bgt, _, _  -> assert false (* à compléter (question 2) *)
-        | Bge, _, _  -> assert false (* à compléter (question 2) *)
+        | Beq, _, _  ->
+            Vbool (v1 == v2)
+        | Bneq, _, _ ->
+            Vbool (v1 != v2)
+        | Blt, _, _  ->
+            Vbool (v1 < v2)
+        | Ble, _, _  ->
+            Vbool (v1 <= v2)
+        | Bgt, _, _  ->
+            Vbool (v1 > v2)
+        | Bge, _, _  ->
+            Vbool (v1 >= v2)
         | Badd, Vstring s1, Vstring s2 ->
-            assert false (* à compléter (question 3) *)
+            Vstring (s1 ^ s2)
         | Badd, Vlist l1, Vlist l2 ->
             assert false (* à compléter (question 5) *)
         | _ -> error "unsupported operand types"
@@ -108,20 +118,24 @@ let rec expr (ctx: ctx) = function
         begin match v1 with
         | Vint n ->
             Vint (-n)
-        | _ -> error "Invalid operation"
+        | _ -> error "Invalid operation Uneg"
         end
   (* booléens *)
   | Ecst (Cbool b) ->
-      assert false (* à compléter (question 2) *)
+      Vbool b
   | Ebinop (Band, e1, e2) ->
-      assert false (* à compléter (question 2) *)
+      Vbool (is_true (expr ctx e1) && is_true (expr ctx e2))
   | Ebinop (Bor, e1, e2) ->
-      assert false (* à compléter (question 2) *)
+      Vbool (is_true (expr ctx e1) || is_true (expr ctx e2))
   | Eunop (Unot, e1) ->
-      assert false (* à compléter (question 2) *)
+      let v1 = expr ctx e1 in
+      Vbool (is_false v1)
   | Eident id ->
-      assert false (* à compléter (question 3) *)
-  (* appel de fonction *)
+      if Hashtbl.mem ctx id then
+        Hashtbl.find ctx id
+      else
+        error ("Variable " ^ id ^ " was not declared before.")
+      (* appel de fonction *)
   | Ecall ("len", [e1]) ->
       assert false (* à compléter (question 5) *)
   | Ecall ("list", [Ecall ("range", [e1])]) ->
@@ -143,9 +157,14 @@ and stmt (ctx: ctx) = function
   | Sblock bl ->
       block ctx bl
   | Sif (e, s1, s2) ->
-      assert false (* à compléter (question 2) *)
-  | Sassign (id, e1) ->
-      assert false (* à compléter (question 3) *)
+      let v = expr ctx e in
+      if is_true v then
+        stmt ctx s1
+      else
+        stmt ctx s2
+  | Sassign (id, e) ->
+      let v = expr ctx e in
+      Hashtbl.add ctx id v
   | Sreturn e ->
       assert false (* à compléter (question 4) *)
   | Sfor (x, e, s) ->
