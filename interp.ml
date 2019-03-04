@@ -110,7 +110,7 @@ let rec expr (ctx: ctx) = function
         | Badd, Vstring s1, Vstring s2 ->
             Vstring (s1 ^ s2)
         | Badd, Vlist l1, Vlist l2 ->
-            assert false (* à compléter (question 5) *)
+            Vlist (Array.append l1 l2)
         | _ -> error "unsupported operand types"
       end
   | Eunop (Uneg, e1) ->
@@ -173,9 +173,19 @@ let rec expr (ctx: ctx) = function
       else
         error ("Function " ^ f ^ " was not defined before.")
   | Elist el ->
-      assert false (* à compléter (question 5) *)
+      Vlist (Array.init (List.length el) (fun i -> expr ctx (List.nth el i)))
   | Eget (e1, e2) ->
-      assert false (* à compléter (question 5) *)
+      let v1 = expr ctx e1 in
+      let v2 = expr ctx e2 in
+      begin match v1, v2 with
+      | Vlist l, Vint i ->
+        if i < Array.length l then    
+            Array.get l i
+        else
+            error ("Index " ^ string_of_int i ^ " out of bounds.")
+      | _, _ ->
+        error "Invalid get operation"
+      end
 
 (* interprétation d'une instruction ; ne renvoie rien *)
 
