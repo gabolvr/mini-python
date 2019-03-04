@@ -216,7 +216,15 @@ and stmt (ctx: ctx) = function
         error "Invalid argument on for loop."
       end
   | Sset (e1, e2, e3) ->
-      assert false (* à compléter (question 5) *)
+      let v1 = expr ctx e1 in
+      let v2 = expr ctx e2 in
+      let v3 = expr ctx e3 in
+      begin match v1, v2 with
+      | Vlist l, Vint i ->
+        Array.set l i v3
+      | _, _ ->
+        error "Invalid arguments on assign expression."
+      end
 
 (* interprétation d'un bloc i.e. d'une séquence d'instructions *)
 

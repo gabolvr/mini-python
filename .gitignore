@@ -7,3 +7,4 @@ mini-python
 lexer.ml
 parser.ml
 parser.mli
+out
