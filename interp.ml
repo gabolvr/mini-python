@@ -208,7 +208,13 @@ and stmt (ctx: ctx) = function
   | Sreturn e ->
       raise (Return (expr ctx e))
   | Sfor (x, e, s) ->
-      assert false (* à compléter (question 5) *)
+      let v = expr ctx e in
+      begin match v with
+      | Vlist l ->
+        Array.iter (fun i -> Hashtbl.add ctx x i; stmt ctx s) l
+      | _ ->
+        error "Invalid argument on for loop."
+      end
   | Sset (e1, e2, e3) ->
       assert false (* à compléter (question 5) *)
 
