@@ -137,19 +137,31 @@ let rec expr (ctx: ctx) = function
         error ("Variable " ^ id ^ " was not declared before.")
       (* appel de fonction *)
   | Ecall ("len", [e1]) ->
-      assert false (* à compléter (question 5) *)
+      let v = expr ctx e1 in
+      begin match v with
+      | Vlist l -> 
+        Vint (Array.length l)
+      | _ ->
+        error "Invalid argument for function len"
+    end
   | Ecall ("list", [Ecall ("range", [e1])]) ->
-      assert false (* à compléter (question 5) *)
+      let v = expr ctx e1 in
+      begin match v with
+        | Vint n -> 
+            Vlist (Array.init n (fun i -> Vint i))
+        | _ ->
+            error "Invalid argument for function range"
+      end
   | Ecall ((f: ident), (el: expr list)) ->
       if Hashtbl.mem functions f then
         let (id_list, body) = Hashtbl.find functions f in
         let ctx_fun = Hashtbl.copy ctx in
         if (List.length id_list) == (List.length el) then
-            let assign_argument id e =
-                let v = expr ctx_fun e in
+            let vl = List.map (fun e -> expr ctx e) el in
+            let assign_argument id v =
                 Hashtbl.add ctx_fun id v
             in
-            List.iter2 assign_argument id_list el;
+            List.iter2 assign_argument id_list vl;
             begin try
                 stmt ctx_fun body;
                 Vnone
