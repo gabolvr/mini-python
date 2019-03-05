@@ -155,9 +155,9 @@ let rec expr (ctx: ctx) = function
   | Ecall ((f: ident), (el: expr list)) ->
       if Hashtbl.mem functions f then
         let (id_list, body) = Hashtbl.find functions f in
-        let ctx_fun = Hashtbl.copy ctx in
-        if (List.length id_list) == (List.length el) then
+        if (List.length id_list) = (List.length el) then
             let vl = List.map (fun e -> expr ctx e) el in
+            let ctx_fun = Hashtbl.create 16 in
             let assign_argument id v =
                 Hashtbl.add ctx_fun id v
             in
@@ -208,10 +208,9 @@ and stmt (ctx: ctx) = function
   | Sreturn e ->
       raise (Return (expr ctx e))
   | Sfor (x, e, s) ->
-      let v = expr ctx e in
-      begin match v with
+      begin match expr ctx e with
       | Vlist l ->
-        Array.iter (fun i -> Hashtbl.add ctx x i; stmt ctx s) l
+        Array.iter (fun i -> Hashtbl.replace ctx x i; stmt ctx s) l
       | _ ->
         error "Invalid argument on for loop."
       end
